@@ -117,7 +117,6 @@ class SSEx8
 	// other manipulations
 	float ElementSum(void) const { __m256 tmp = _mm256_permute2f128_ps(octo_floats , octo_floats , 1); tmp = _mm256_add_ps(tmp, octo_floats); tmp = _mm256_hadd_ps(tmp, tmp); tmp = _mm256_hadd_ps(tmp, tmp); __m128 tmp2 = _mm256_extractf128_ps (tmp,0);return _mm_cvtss_f32(tmp2); }
 //	float Dot(const SSEx8 &src2) { __m256 tmp=_mm256_mul_ps(octo_floats,src2.octo_floats); tmp=_mm256_hadd_ps(tmp,tmp); tmp=_mm256_hadd_ps(tmp,tmp);float ret; _mm256_store_ss(&ret,tmp); return ret;}
-//	float Dot(const float &src2) { // use the extract notation to create a vector with only the lower element set? otherwise we end up with a load }
 
   private:
 	__m256 octo_floats;
@@ -131,9 +130,7 @@ SSEx8 SSEx8::Get(int index_prm)
 	switch (index_prm)
 	{
 		case 0:
-//			tmp.octo_floats=_mm256_shuffle_ps(tmp.octo_floats,octo_floats,1);
 			tmp.octo_floats=_mm256_blend_ps(tmp.octo_floats,octo_floats,1);
-//			tmp.octo_floats=_mm256_permute_ps(octo_floats,1);
 			break;
 		case 1:
 			tmp.octo_floats=_mm256_blend_ps(tmp.octo_floats,octo_floats,2);
@@ -146,7 +143,6 @@ SSEx8 SSEx8::Get(int index_prm)
 		case 3:
 			tmp.octo_floats=_mm256_blend_ps(tmp.octo_floats,octo_floats,8);
 			tmp.octo_floats=_mm256_permute_ps(tmp.octo_floats,3);
-//			tmp.octo_floats=_mm256_permute_ps(tmp.octo_floats,1);
 			break;
 		case 4:
 			tmp.octo_floats=_mm256_blend_ps(tmp.octo_floats,_mm256_castps128_ps256(_mm256_extractf128_ps(octo_floats,1)),1);
@@ -277,7 +273,6 @@ class SSEx4
 	//SSEx4(const SSEx4 &src_prm) { quad_floats=_mm_shuffle_ps(src_prm.quad_floats,src_prm.quad_floats,_MM_SHUFFLE(3,2,1,0)); }; 
 
 	// assignment
-//	SSEx4 & operator=(const SSEx4 &src_prm) { quad_floats=_mm_shuffle_ps(src_prm.quad_floats,src_prm.quad_floats,_MM_SHUFFLE(3,2,1,0)); }
 	SSEx4 & operator=(const SSEx4 &src_prm) { quad_floats=src_prm.quad_floats; }
 	SSEx4 & operator=(const float x[4]) { quad_floats=_mm_load_ps(x); }; 
 	void Set(int index,float value); 
