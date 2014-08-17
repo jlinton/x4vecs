@@ -21,7 +21,7 @@ Simple code examples
 ====================
 
 This is not "documentation" see the class definitions and the unit tests for actual examples!
-
+<pre>
 Construction:
 	NEONx4 w(7,8,9,10);
 	float y[4]={1,2,3,4};
@@ -38,7 +38,7 @@ Operations:
 	Pretty much everything you would expect, including overloading the global float
 	.Dot() // dot product 
 	.ElementSum() //the elements of the vector summed and returned as a float
-
+</pre>
 Legal Stuff
 ==========
 Copyright (c) 2012,2014 Jeremy Linton
