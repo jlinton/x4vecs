@@ -15,7 +15,7 @@ No real effort has been made to optimize for one case or another, and benchmarki
 shows there are definitly cases where the portable version is faster (especially if a lot of insert/extract operations are being used)
 
 If you need a library for multiple hardware platforms, this might be useful, otherwise there are probably better choices, 
-especially for SSE. 
+especially for SSE.
 
 Simple code examples
 ====================
