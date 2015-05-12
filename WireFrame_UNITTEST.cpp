@@ -1,7 +1,7 @@
 //usr/bin/tail -n +1 $0 | g++ -I/usr/local/include/SDL2 -O3 -g -lSDL2 -msse4 pugixml.cpp -o ${0%.cpp} -x c++ - && ./${0%.cpp} $1 && rm ./${0%.cpp} ; exit
 //
 // x4vecs unit test & wireframe renderer.
-// Copyrright (C) 2013-2015 Jeremy Linton
+// Copyright (C) 2013-2015 Jeremy Linton
 //
 // Build with SDL2-dev installed,
 // also put pugixml.[hc]pp, pugiconfig.hpp in the current directory
