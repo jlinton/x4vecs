@@ -447,7 +447,7 @@ SSEx4 operator/(const float &a,const SSEx4 &b)
 }
 
 typedef SSEx4 Vec4;
-#include <matrix.cpp>
+#include "matrix.cpp"
 
 // bogus class used for assignment
 class SSEx4_field
