@@ -1,4 +1,4 @@
-//usr/bin/tail -n +1 $0 | g++ -I/usr/local/include/SDL2 -O3 -g -lSDL2 -msse4 pugixml.cpp -o ${0%.cpp} -x c++ - && ./${0%.cpp} $1 && rm ./${0%.cpp} ; exit
+//usr/bin/tail -n +1 $0 | g++ -I/usr/local/include/SDL2 -O3 -g -lSDL2 -msse4 pugixml.cpp -o ${0%.cpp} -x c++ - && ./${0%.cpp} $1 $2 && rm ./${0%.cpp} ; exit
 //
 // x4vecs unit test & wireframe renderer.
 // Copyright (C) 2013-2015 Jeremy Linton
@@ -80,12 +80,13 @@ struct polylist_t
 class Mesh
 {
   public:
-    Mesh(const char *FileName_prm):NUMPOINTS(-1),NUMPOLYS(-1),Polys(NULL),Points(NULL),Normals(NULL) { if (ParseCollada(FileName_prm)!=0) throw; }
+    Mesh(const char *FileName_prm):NUMPOINTS(-1),NUMPOLYS(0),NUMNORMALS(-1),Polys(NULL),Points(NULL),Normals(NULL) { if (ParseCollada(FileName_prm)!=0) throw; }
     ~Mesh(); 
     int ParseCollada(const char *FileName_prm);
 
-    int NUMPOINTS; //number of points in this mesh
-    int NUMPOLYS;  //number of polygons in this mesh
+    int NUMPOINTS;  //number of points in this mesh
+    int NUMPOLYS;   //number of polygons in this mesh
+    int NUMNORMALS; //number of normals
     polylist_t *Polys; 
 
     SSEx4 *Points;
@@ -168,51 +169,74 @@ int  Mesh::ParseCollada(const char *FileName_prm)
                             normals=normals.child("float_array");
                             if (normals)
                             {
-                                NUMPOLYS=normals.attribute("count").as_int()/3;
-                                printf(" total polys=%d .",NUMPOLYS);
-                                Normals=new SSEx4[NUMPOLYS+5];
+                                NUMNORMALS=normals.attribute("count").as_int()/3;
+                                printf(" total normals=%d .",NUMNORMALS);
+                                Normals=new SSEx4[NUMNORMALS+5];
 
                                 PopulateVecs(Normals,(char *)normals.first_child().value(),0);
                             }
                         }
 
+                        Polys=new polylist_t[NUMNORMALS]; // use the normals to approximate
+                            
+
                         pugi::xml_node polylist=tool.child("polylist");
-                        if (polylist)
+                        int iter=0;
+                        while (polylist)
                         {
-                            printf("7.");
-                            // TODO, verify polylist count=NUMPOLYS
-                            Polys=new polylist_t[NUMPOLYS];
-                            pugi::xml_node vcount=polylist.child("vcount");
-                            pugi::xml_node pl=polylist.child("p");
-
-                            if (pl)
+                            NUMPOLYS+=polylist.attribute("count").as_int();
+                            printf(" polycount=%d ",NUMPOLYS);
+                            
+                            if (NUMPOLYS>0)
                             {
-                                printf("8.");
-                                char *hold_vtk;
-                                char *hold_ptk;
-                                
-                                char *vtk=strtok_r((char *)vcount.first_child().value()," ",&hold_vtk);
-                                char *ptk=strtok_r((char *)pl.first_child().value()," ",&hold_ptk);
-                                int iter=0;
-                                do 
+                                printf("7.");
+                                // TODO, verify polylist count=NUMPOLYS
+                                pugi::xml_node vcount=polylist.child("vcount");
+                                pugi::xml_node pl=polylist.child("p");
+
+                                pugi::xml_node textcords=polylist.find_child_by_attribute("input","semantic","TEXCOORD");
+
+                                if (textcords)
                                 {
-                                    int num_verts;
-                                    sscanf(vtk,"%d",&num_verts);
-                                    Polys[iter].num_points=num_verts;
-                                    for (int cv=0;cv<num_verts;cv++)
+                                    printf("Skipping textcords ");
+                                }
+
+                                if (pl)
+                                {
+                                    printf("8.");
+                                    char *hold_vtk;
+                                    char *hold_ptk;
+                                
+                                    char *vtk=strtok_r((char *)vcount.first_child().value()," ",&hold_vtk);
+                                    char *ptk=strtok_r((char *)pl.first_child().value()," ",&hold_ptk);
+                                    do 
                                     {
-                                        sscanf(ptk,"%d",&Polys[iter].points[cv]);
-                                        ptk=strtok_r(NULL," ",&hold_ptk);
-                                        sscanf(ptk,"%d",&Polys[iter].normals[cv]);
-                                        ptk=strtok_r(NULL," ",&hold_ptk);
-                                    }
-                                    iter++;
-                                    vtk=strtok_r(NULL," ",&hold_vtk);
-                                } while (vtk!=NULL);
+                                        int num_verts;
+                                        sscanf(vtk,"%d",&num_verts);
+                                        Polys[iter].num_points=num_verts;
+                                        for (int cv=0;cv<num_verts;cv++)
+                                        {
+                                            sscanf(ptk,"%d",&Polys[iter].points[cv]);
+                                            ptk=strtok_r(NULL," ",&hold_ptk);
+                                            sscanf(ptk,"%d",&Polys[iter].normals[cv]);
+                                            ptk=strtok_r(NULL," ",&hold_ptk);
+                                            if (textcords)
+                                            {
+                                                // TEXCOORD
+                                                int tx;
+                                                sscanf(ptk,"%d",&tx);
+                                                ptk=strtok_r(NULL," ",&hold_ptk);
+                                            }
+                                        }
+                                        iter++;
+                                        vtk=strtok_r(NULL," ",&hold_vtk);
+                                    } while (vtk!=NULL);
                                 
 
+                                }
                             }
-                        }
+                            polylist=polylist.next_sibling("polylist");
+                        } 
 
 
                     }
@@ -220,9 +244,9 @@ int  Mesh::ParseCollada(const char *FileName_prm)
             }
         }
         printf("Done\n");fflush(0);
-		//
-		// Debug the mesh parsing.
-		//
+        //
+        // Debug the mesh parsing.
+        //
         //std::cout << "XML [" << source << "] parsed without errors, attr value: [" << doc.child("node").attribute("attr").value() << "]\n\n";
         //for (child("library_geometries").child("geometry").child("mesh").child("source_id").child("float_array"); tool; tool = tool.next_sibling("float_array"))
         //{
@@ -255,9 +279,9 @@ void Mesh::PopulateVecs(SSEx4 *Vecs,char *SourceStr,float w)
     int iter=0;
     do 
     {
-		// pick off a single x,y,z set of points from the given source string
-		// uses 'w' as the 4th part of the vector, which indicates if we are talking
-		// about a point or a vector itself.
+        // pick off a single x,y,z set of points from the given source string
+        // uses 'w' as the 4th part of the vector, which indicates if we are talking
+        // about a point or a vector itself.
         float x,y,z;
         sscanf(tk,"%f",&x);
         tk=strtok(NULL," ");
@@ -277,13 +301,14 @@ void Mesh::PopulateVecs(SSEx4 *Vecs,char *SourceStr,float w)
 //
 // Draw wireframe rendering of mesh_data to current rendering surface,
 // scaled by width, height, (also implicitly transformed to +200,+200)
-int UpdateSurface(SDL_Renderer *Rndr,Mesh *mesh_data,int Width,int Height,int color)
+int UpdateSurface(SDL_Renderer *Rndr,Mesh *mesh_data,int Width,int Height,int color,float scale)
 {
 
     SDL_SetRenderDrawColor(Rndr,0,0,0,amsk);
     SDL_RenderClear(Rndr);
 
-    Scale scll(80,80,80);
+    Scale scll(scale,scale,scale);  
+
     RotateXRad rot(float(color)/10.0);
 //  RotateYRad rot2(float(color)/10.0);
     RotateYRad rot2(2.0);
@@ -292,7 +317,6 @@ int UpdateSurface(SDL_Renderer *Rndr,Mesh *mesh_data,int Width,int Height,int co
 
     SDL_SetRenderDrawColor(Rndr,color,0,0,amsk);
                 
-
     // for each polygon in mesh
     for (int x=0;x<mesh_data->NUMPOLYS;x++)
     {
@@ -315,6 +339,7 @@ int UpdateSurface(SDL_Renderer *Rndr,Mesh *mesh_data,int Width,int Height,int co
             // start drawing lines when we have transformed at least two points
             if (poly_points!=0)
             {
+                //printf("Draw line %d:%d to %d:%d\n",prev_x,prev_y,x,y);
                 SDL_RenderDrawLine(Rndr,prev_x,prev_y,x,y);
             }
             else
@@ -331,6 +356,8 @@ int UpdateSurface(SDL_Renderer *Rndr,Mesh *mesh_data,int Width,int Height,int co
     }
 }
 
+#define TOTAL_ROTATIONS 10
+
 #include <unistd.h>
 int main(int argc, char **argv)
 {
@@ -342,6 +369,13 @@ int main(int argc, char **argv)
 
     //read and construct a mesh from the given .dae file
     Mesh mesh_from_file(argv[1]); 
+
+    float scale=80; //use 80 for monkey.dae and 0.2 for heinkel.dae
+    if (argc>2)
+    {
+        sscanf(argv[2],"%f",&scale);
+        printf("Scale set to %f\n",scale);
+    }
 
     // initialize the SDL video surface
     if (SDL_Init(SDL_INIT_VIDEO)!=-1)
@@ -362,7 +396,7 @@ int main(int argc, char **argv)
                         //
                         // Ok, all the SDL setup worked, start spinning the mesh
                         //
-                        for (int iteration=0;iteration<10;iteration++)
+                        for (int iteration=0;iteration<TOTAL_ROTATIONS;iteration++)
                         {
                             for (int color=0;color<255;color+=2)
                             {
@@ -371,15 +405,12 @@ int main(int argc, char **argv)
                                 {
                                     if (event.type==SDL_QUIT)
                                     {
+                                        iteration=TOTAL_ROTATIONS;
                                         break;
                                     }
                                 }
-                                UpdateSurface(render,&mesh_from_file,640,480,color);
+                                UpdateSurface(render,&mesh_from_file,640,480,color,scale);
                                 
-                                // Only nessisary if we lock the surface and draw on it directly
-                                //SDL_UpdateTexture(tex, NULL, surf->pixels, 640 * sizeof (Uint32));
-
-                                SDL_RenderCopy(render, tex, NULL, NULL);
                                 SDL_RenderPresent(render);
                             }
                         }
