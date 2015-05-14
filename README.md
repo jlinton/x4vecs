@@ -39,6 +39,9 @@ Operations:
 	.Dot() // dot product 
 	.ElementSum() //the elements of the vector summed and returned as a float
 </pre>
+Screenshot of unit test
+========================
+![Unit test screenshot](/Heinkel.PNG?raw=true "Wireframe unit test")
 Legal Stuff
 ==========
 Copyright (c) 2012,2014 Jeremy Linton
