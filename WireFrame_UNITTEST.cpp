@@ -1,4 +1,4 @@
-//usr/bin/tail -n +1 $0 | g++ -I/usr/local/include/SDL2 -O3 -g -lSDL2 -msse4 pugixml.cpp -o ${0%.cpp} -x c++ - && ./${0%.cpp} $1 $2 && rm ./${0%.cpp} ; exit
+//usr/bin/tail -n +1 $0 | g++ -I/usr/include/SDL2 -O3 -g -lSDL2 pugixml.cpp -msse3 -o ${0%.cpp} -x c++ - && ./${0%.cpp} $1 $2 && rm ./${0%.cpp} ; exit
 //
 // x4vecs unit test & wireframe renderer.
 // Copyright (C) 2013-2015 Jeremy Linton
@@ -31,13 +31,26 @@
 
 
 
-
 #include <stdio.h>
 
 #include <SDL.h>
 
+
 #define NO_MAIN
+
+
+#ifdef __ARM_NEON
+#define __ARM_NEON__
+#endif
+
+#ifdef __ARM_NEON__
+#include "neon_objs.cpp"
+#endif
+
+#ifdef __SSE4_1__
 #include "sse_objs2.cpp"
+#endif
+
 
 #include "pugixml.hpp"
 
@@ -89,10 +102,10 @@ class Mesh
     int NUMNORMALS; //number of normals
     polylist_t *Polys; 
 
-    SSEx4 *Points;
-    SSEx4 *Normals;
+    Vec4 *Points;
+    Vec4 *Normals;
   private:
-    void PopulateVecs(SSEx4 *Vecs,char *SourceStr,float w);
+    void PopulateVecs(Vec4 *Vecs,char *SourceStr,float w);
 };
 
 Mesh::~Mesh()
@@ -154,7 +167,7 @@ int  Mesh::ParseCollada(const char *FileName_prm)
                                 printf("total points %s .",positions.attribute("count").value());
 
                                 NUMPOINTS=positions.attribute("count").as_int()/3;
-                                Points=new SSEx4[NUMPOINTS+5];
+                                Points=new Vec4[NUMPOINTS+5];
                                 //printf("points %s",positions.first_child().value());
                                 PopulateVecs(Points,(char *)positions.first_child().value(),1);
 
@@ -171,7 +184,7 @@ int  Mesh::ParseCollada(const char *FileName_prm)
                             {
                                 NUMNORMALS=normals.attribute("count").as_int()/3;
                                 printf(" total normals=%d .",NUMNORMALS);
-                                Normals=new SSEx4[NUMNORMALS+5];
+                                Normals=new Vec4[NUMNORMALS+5];
 
                                 PopulateVecs(Normals,(char *)normals.first_child().value(),0);
                             }
@@ -273,7 +286,7 @@ int  Mesh::ParseCollada(const char *FileName_prm)
 //
 // bad mojo here, we are casting the const away, and modifying the string!
 // works for now because its pugixml, but in the future we probably should use strtok_r
-void Mesh::PopulateVecs(SSEx4 *Vecs,char *SourceStr,float w)
+void Mesh::PopulateVecs(Vec4 *Vecs,char *SourceStr,float w)
 {
     char *tk=strtok(SourceStr," ");
     int iter=0;
@@ -289,7 +302,7 @@ void Mesh::PopulateVecs(SSEx4 *Vecs,char *SourceStr,float w)
         tk=strtok(NULL," ");
         sscanf(tk,"%f",&z);
         tk=strtok(NULL," ");
-        Vecs[iter] = SSEx4(x, y, z ,w);
+        Vecs[iter] = Vec4(x, y, z ,w);
         iter++;
     } while (tk!=NULL);
 }
@@ -320,14 +333,16 @@ int UpdateSurface(SDL_Renderer *Rndr,Mesh *mesh_data,int Width,int Height,int co
     // for each polygon in mesh
     for (int x=0;x<mesh_data->NUMPOLYS;x++)
     {
-        int prev_x,prev_y;
-        int first_x,first_y;
+        int prev_x ,prev_y;
+        int first_x, first_y;
+
+        prev_x = prev_y = first_x = first_y = 0; // fix gcc warning
 
         // for each point in the polygon
         for (int poly_points=0;poly_points<mesh_data->Polys[x].num_points;poly_points++)
         {
             // ok pick out the point for this polygon and transform it
-            SSEx4 new_point=trans*mesh_data->Points[mesh_data->Polys[x].points[poly_points]];
+            Vec4 new_point=trans*mesh_data->Points[mesh_data->Polys[x].points[poly_points]];
 
             //extract the x and y from the vector
             int x=new_point[0]; 
@@ -354,6 +369,7 @@ int UpdateSurface(SDL_Renderer *Rndr,Mesh *mesh_data,int Width,int Height,int co
         }
         SDL_RenderDrawLine(Rndr,prev_x,prev_y,first_x,first_y);
     }
+    return 0;
 }
 
 #define TOTAL_ROTATIONS 10
@@ -370,7 +386,7 @@ int main(int argc, char **argv)
     //read and construct a mesh from the given .dae file
     Mesh mesh_from_file(argv[1]); 
 
-    float scale=80; //use 80 for monkey.dae and 0.2 for heinkel.dae
+    float scale=80; //use 80 for monkey.dae and 0.2 for heinkel.dae 
     if (argc>2)
     {
         sscanf(argv[2],"%f",&scale);
@@ -427,4 +443,5 @@ int main(int argc, char **argv)
         }
         SDL_Quit();
     }
+	return 0;
 }

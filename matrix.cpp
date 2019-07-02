@@ -30,8 +30,6 @@
 // somewhat efficient manner. 
 
 
-
-
 class SSEx4Matrix
 {
   public:

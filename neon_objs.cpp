@@ -40,6 +40,10 @@
 #include <string>
 #include <stdio.h>
 
+#ifdef __ARM_NEON
+#define __ARM_NEON__
+#endif
+
 #ifdef __ARM_NEON__
 #pragma message "Building ARM NEON"
 #include <arm_neon.h>
@@ -48,13 +52,13 @@ class NEONx4
 {
   public:
 	NEONx4(){}; //construct uninitialized
-	NEONx4(float src) {quad_floats= vsetq_lane_f32(src,quad_floats, 0); } //load single value, clear remaining
+	NEONx4(float src) { quad_floats=vmovq_n_f32(0.0);  quad_floats=vsetq_lane_f32(src, quad_floats, 0); } //load single value, clear remaining
 	NEONx4(float *src) {quad_floats=vld1q_f32(src); }
-	NEONx4(float a,float b,float c,float d) { quad_floats=vld1q_lane_f32 (&a,quad_floats, 0); quad_floats=vld1q_lane_f32 (&b,quad_floats, 1); quad_floats=vld1q_lane_f32 (&c,quad_floats, 2); quad_floats=vld1q_lane_f32 (&d,quad_floats, 3); }
+	NEONx4(float a,float b,float c,float d) { quad_floats=vld1q_lane_f32(&a,quad_floats, 0); quad_floats=vld1q_lane_f32(&b,quad_floats, 1); quad_floats=vld1q_lane_f32(&c,quad_floats, 2); quad_floats=vld1q_lane_f32(&d,quad_floats, 3); }
 
 	// assignment
-	NEONx4 & operator=(const NEONx4 &src_prm) {quad_floats=src_prm.quad_floats;}
-	NEONx4 & operator=(const float x[4]) {quad_floats=vld1q_f32(x); }
+	NEONx4 & operator=(const NEONx4 &src_prm) {quad_floats=src_prm.quad_floats; return *this;}
+	NEONx4 & operator=(const float x[4]) {quad_floats=vld1q_f32(x); return *this;}
 	void Set(const int index,float value) 
 	{ 
 		switch (index)
@@ -89,6 +93,7 @@ class NEONx4
 			case 3:	
 				return vgetq_lane_f32(quad_floats,3);
 		}
+		return 0.0;
 	}
 	//return indexed value as element 0 in new vector
 	NEONx4 Get(const int index_prm)
@@ -304,6 +309,7 @@ int main(int argc,char *argv[])
     printf("Matrix\n%s\n",MatM.as_str().c_str());
     MatM.Transpose();
     printf("Matrix Transpose\n%s\n",MatM.as_str().c_str());
+	return 0;
 }
 
 #endif
