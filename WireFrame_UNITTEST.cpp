@@ -307,6 +307,8 @@ void Mesh::PopulateVecs(Vec4 *Vecs,char *SourceStr,float w)
     } while (tk!=NULL);
 }
 
+// number of points to batch
+#define MAX_DRAW_LINES 5000
 
 // This is the renderer
 // it spins the given mesh 
@@ -316,6 +318,8 @@ void Mesh::PopulateVecs(Vec4 *Vecs,char *SourceStr,float w)
 // scaled by width, height, (also implicitly transformed to +200,+200)
 int UpdateSurface(SDL_Renderer *Rndr,Mesh *mesh_data,int Width,int Height,int color,float scale)
 {
+	SDL_Point points[MAX_DRAW_LINES];
+	int point_count = 0;
 
     SDL_SetRenderDrawColor(Rndr,0,0,0,amsk);
     SDL_RenderClear(Rndr);
@@ -329,46 +333,51 @@ int UpdateSurface(SDL_Renderer *Rndr,Mesh *mesh_data,int Width,int Height,int co
     SSEx4Matrix trans=pro*rot*rot2*scll;
 
     SDL_SetRenderDrawColor(Rndr,color,0,0,amsk);
-                
+
     // for each polygon in mesh
     for (int x=0;x<mesh_data->NUMPOLYS;x++)
     {
-        int prev_x ,prev_y;
-        int first_x, first_y;
 
-        prev_x = prev_y = first_x = first_y = 0; // fix gcc warning
-
+		int poly_points;
         // for each point in the polygon
-        for (int poly_points=0;poly_points<mesh_data->Polys[x].num_points;poly_points++)
+        for (poly_points=0;poly_points<mesh_data->Polys[x].num_points;poly_points++)
         {
             // ok pick out the point for this polygon and transform it
             Vec4 new_point=trans*mesh_data->Points[mesh_data->Polys[x].points[poly_points]];
 
-            //extract the x and y from the vector
-            int x=new_point[0]; 
-            int y=new_point[1]; 
+			// should we append to the prev mesh?
+			if ((poly_points==0) && (point_count>2) )
+			{
+				//how we detect adjacent polys makes a huge diff, scanning the prev 3 points might find a line which allows us to append this polygon
+				if ((points[point_count-1].x!=int(new_point[0]+200)) || (points[point_count-1].y!=int(new_point[1]+200)))
+				{
+					//printf("prev point %d,%d\n",points[point_count-1].x,points[point_count-1].y );
+					//printf("Big point flush %d\n", point_count);
+					SDL_RenderDrawLines(Rndr,points,point_count);
+					point_count=0;
+				}
+			}
 
-            x+=200; //shift the rotation to somewhere visible on the canvas
-            y+=200; 
+			points[point_count].x=new_point[0]+200;
+			points[point_count].y=new_point[1]+200;
 
-            // start drawing lines when we have transformed at least two points
-            if (poly_points!=0)
-            {
-                //printf("Draw line %d:%d to %d:%d\n",prev_x,prev_y,x,y);
-                SDL_RenderDrawLine(Rndr,prev_x,prev_y,x,y);
-            }
-            else
-            {
-                first_x=x;
-                first_y=y;
-            }
-
-            prev_x=x;
-            prev_y=y;       
+			//printf("point %d,%d\n",points[point_count].x,points[point_count].y );
+			point_count++;
 
         }
-        SDL_RenderDrawLine(Rndr,prev_x,prev_y,first_x,first_y);
+		// close polygon
+		points[point_count].x=points[point_count-poly_points].x;
+		points[point_count].y=points[point_count-poly_points].y;
+		point_count++;
+
+		if (point_count>MAX_DRAW_LINES-50)
+		{
+			printf("Big point flush %d\n", point_count);
+			SDL_RenderDrawLines(Rndr,points,point_count);
+			point_count=0;
+		}
     }
+	SDL_RenderDrawLines(Rndr,points,point_count);
     return 0;
 }
 
