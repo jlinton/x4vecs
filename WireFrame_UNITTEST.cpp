@@ -272,7 +272,7 @@ int  Mesh::ParseCollada(const char *FileName_prm)
     }
     else
     {
-        printf("Parse error '%s' at line:%d\n",result.description(),result.offset);
+        printf("Parse error '%s' at line:%ld\n",result.description(),result.offset);
         ret=-1;
         //std::cout << "XML [" << source << "] parsed with errors, attr value: [" << doc.child("node").attribute("attr").value() << "]\n";
         //std::cout << "Error description: " << result.description() << "\n";
@@ -302,7 +302,7 @@ void Mesh::PopulateVecs(Vec4 *Vecs,char *SourceStr,float w)
         tk=strtok(NULL," ");
         sscanf(tk,"%f",&z);
         tk=strtok(NULL," ");
-        Vecs[iter] = Vec4(x, y, z ,w);
+        Vecs[iter] = Vec4(x, y, z, w);
         iter++;
     } while (tk!=NULL);
 }

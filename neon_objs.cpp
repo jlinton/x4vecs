@@ -27,13 +27,6 @@
 
 // To build some basic unit tests for this module do:
 //   g++ -mfloat-abi=softfp -mfpu=neon -g -O3 neon_objs.cpp
-//
-// seems there is a generation problem?
-// the alignment prefix from the compiler appears to be using a : when it should be using a @
-// hack up the assembly output from the compile phase, then assemble and link
-// /usr/local/gcc48/bin/g++ -mfloat-abi=softfp -mfpu=neon -O3 -g neon_objs.cpp -S; sed -i "s/\(\[r[0-9]\):64/\\1/g" neon_objs.s;sed -i "s/\(\[ip\):64/\\1/g" neon_objs.s; as neon_objs.s -o neon_objs.o ; g++ -g neon_objs.o
-// This is obviously a custom built ARM version of the release gcc 4.8.3 
-
 
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
@@ -54,7 +47,9 @@ class NEONx4
 	NEONx4(){}; //construct uninitialized
 	NEONx4(float src) { quad_floats=vmovq_n_f32(0.0);  quad_floats=vsetq_lane_f32(src, quad_floats, 0); } //load single value, clear remaining
 	NEONx4(float *src) {quad_floats=vld1q_f32(src); }
-	NEONx4(float a,float b,float c,float d) { quad_floats=vld1q_lane_f32(&a,quad_floats, 0); quad_floats=vld1q_lane_f32(&b,quad_floats, 1); quad_floats=vld1q_lane_f32(&c,quad_floats, 2); quad_floats=vld1q_lane_f32(&d,quad_floats, 3); }
+	//NEONx4(float a,float b,float c,float d) { quad_floats=vld1q_lane_f32(&a,quad_floats, 0); quad_floats=vld1q_lane_f32(&b,quad_floats, 1); quad_floats=vld1q_lane_f32(&c,quad_floats, 2); quad_floats=vld1q_lane_f32(&d,quad_floats, 3); }
+	NEONx4(float a,float b,float c,float d) { quad_floats=vmovq_n_f32(0.0);  quad_floats=vsetq_lane_f32(a, quad_floats, 0); quad_floats=vsetq_lane_f32(b, quad_floats, 1); quad_floats=vsetq_lane_f32(c, quad_floats, 2); quad_floats=vsetq_lane_f32(d, quad_floats, 3); }
+
 
 	// assignment
 	NEONx4 & operator=(const NEONx4 &src_prm) {quad_floats=src_prm.quad_floats; return *this;}
@@ -64,16 +59,16 @@ class NEONx4
 		switch (index)
 		{
 		case 0:
-			quad_floats=vld1q_lane_f32 (&value,quad_floats, 0); 
+			quad_floats=vsetq_lane_f32(value,quad_floats, 0); 
 			break;
 		case 1:
-			quad_floats=vld1q_lane_f32 (&value,quad_floats, 1); 
+			quad_floats=vsetq_lane_f32(value,quad_floats, 1); 
 			break;
 		case 2:
-			quad_floats=vld1q_lane_f32 (&value,quad_floats, 2); 
+			quad_floats=vsetq_lane_f32(value,quad_floats, 2); 
 			break;
 		case 3:
-			quad_floats=vld1q_lane_f32 (&value,quad_floats, 3); 
+			quad_floats=vsetq_lane_f32(value,quad_floats, 3); 
 			break;
 		}
 	}
