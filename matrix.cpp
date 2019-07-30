@@ -25,9 +25,9 @@
 
 
 // This class wraps one of the vector types to create a basic 4x4 matrix class
-// Its pretty "clean" except for the Transpose operation which requires us to be 
-// friended by the Vec4 class so that we can access the individual vector members in a 
-// somewhat efficient manner. 
+// Its pretty "clean" except for the Transpose operation which requires us to be
+// friended by the Vec4 class so that we can access the individual vector members in a
+// somewhat efficient manner.
 
 
 class SSEx4Matrix
@@ -174,7 +174,7 @@ void SSEx4Matrix::Transpose(void)
     }
 #endif
 }
- 
+
 
 // BTW: This little routine is nearly 4x as large as anything else in this module..
 // So, don't use it for anything other than debug..

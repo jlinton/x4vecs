@@ -7,9 +7,9 @@
 // also put pugixml.[hc]pp, pugiconfig.hpp in the current directory
 //
 // This started as an alternate unit test for the x4vecs cross platform
-// vector/matrix routines I wrote. I actually think its a pretty cool piece of 
+// vector/matrix routines I wrote. I actually think its a pretty cool piece of
 // code on its own. It can read the standard COLLADA .dae asset interchange format
-// open a graphics window and rotate it using a software wireframe renderer 
+// open a graphics window and rotate it using a software wireframe renderer
 //
 // The whole thing comes down to a 20 line piece of code that is basically
 //
@@ -24,9 +24,9 @@
 //
 // All the magic happens in the matrix multiply of `trans*Points[]`
 //
-// I have another version with a custom line draw routine instead of the 
+// I have another version with a custom line draw routine instead of the
 // SDL2 routine, the idea is that a fast polyfill will provide a gouraud shaded
-// routine with just a little more work (and a z-buffer). 
+// routine with just a little more work (and a z-buffer).
 //
 
 
@@ -87,19 +87,19 @@ struct polylist_t
 // it can then be used by UpdateSurface() to draw a wireframe
 // representation of the mesh.
 //
-// In the near future consider creating a couple of meshes and 
+// In the near future consider creating a couple of meshes and
 // drawing them independently to the canvas
 class Mesh
 {
   public:
     Mesh(const char *FileName_prm):NUMPOINTS(-1),NUMPOLYS(0),NUMNORMALS(-1),Polys(NULL),Points(NULL),Normals(NULL) { if (ParseCollada(FileName_prm)!=0) throw; }
-    ~Mesh(); 
+    ~Mesh();
     int ParseCollada(const char *FileName_prm);
 
     int NUMPOINTS;  //number of points in this mesh
     int NUMPOLYS;   //number of polygons in this mesh
     int NUMNORMALS; //number of normals
-    polylist_t *Polys; 
+    polylist_t *Polys;
 
     Vec4 *Points;
     Vec4 *Normals;
@@ -124,10 +124,10 @@ Mesh::~Mesh()
 }
 
 
-// This reads the given .DAE file, and treats it like 
+// This reads the given .DAE file, and treats it like
 // an XML COLLADA file. Pugixml is used to parse the XML
 // and the resulting data is pushed into an array of polylist_t
-// structures. 
+// structures.
 int  Mesh::ParseCollada(const char *FileName_prm)
 {
     int ret=0;
@@ -173,8 +173,8 @@ int  Mesh::ParseCollada(const char *FileName_prm)
                                 //          exit(1);
                             }
                         }
-                        
-                        pugi::xml_node normals=tool.find_child_by_attribute("source","id",(mesh_name+"-normals").c_str());                      
+
+                        pugi::xml_node normals=tool.find_child_by_attribute("source","id",(mesh_name+"-normals").c_str());
                         if (normals)
                         {
                             printf("6.");
@@ -190,7 +190,7 @@ int  Mesh::ParseCollada(const char *FileName_prm)
                         }
 
                         Polys=new polylist_t[NUMNORMALS]; // use the normals to approximate
-                            
+
 
                         pugi::xml_node polylist=tool.child("polylist");
                         int iter=0;
@@ -198,7 +198,7 @@ int  Mesh::ParseCollada(const char *FileName_prm)
                         {
                             NUMPOLYS+=polylist.attribute("count").as_int();
                             printf(" polycount=%d ",NUMPOLYS);
-                            
+
                             if (NUMPOLYS>0)
                             {
                                 printf("7.");
@@ -218,10 +218,10 @@ int  Mesh::ParseCollada(const char *FileName_prm)
                                     printf("8.");
                                     char *hold_vtk;
                                     char *hold_ptk;
-                                
+
                                     char *vtk=strtok_r((char *)vcount.first_child().value()," ",&hold_vtk);
                                     char *ptk=strtok_r((char *)pl.first_child().value()," ",&hold_ptk);
-                                    do 
+                                    do
                                     {
                                         int num_verts;
                                         sscanf(vtk,"%d",&num_verts);
@@ -243,12 +243,12 @@ int  Mesh::ParseCollada(const char *FileName_prm)
                                         iter++;
                                         vtk=strtok_r(NULL," ",&hold_vtk);
                                     } while (vtk!=NULL);
-                                
+
 
                                 }
                             }
                             polylist=polylist.next_sibling("polylist");
-                        } 
+                        }
 
 
                     }
@@ -266,7 +266,7 @@ int  Mesh::ParseCollada(const char *FileName_prm)
             //std::cout << ": AllowRemote " << tool.attribute("AllowRemote").as_bool();
             //std::cout << ", Timeout " << tool.attribute("Timeout").as_int();
             //std::cout << ", Description '" << tool.child_value("Description") << "'\n";
-    
+
         //}
     }
     else
@@ -280,7 +280,7 @@ int  Mesh::ParseCollada(const char *FileName_prm)
     return ret;
 }
 
-// Given a XML parsed out string from the .dae file, turn it into a set of 
+// Given a XML parsed out string from the .dae file, turn it into a set of
 // 1x4 vectors.
 //
 // bad mojo here, we are casting the const away, and modifying the string!
@@ -289,7 +289,7 @@ void Mesh::PopulateVecs(Vec4 *Vecs,char *SourceStr,float w)
 {
     char *tk=strtok(SourceStr," ");
     int iter=0;
-    do 
+    do
     {
         // pick off a single x,y,z set of points from the given source string
         // uses 'w' as the 4th part of the vector, which indicates if we are talking
@@ -310,20 +310,20 @@ void Mesh::PopulateVecs(Vec4 *Vecs,char *SourceStr,float w)
 #define MAX_DRAW_LINES 5000
 
 // This is the renderer
-// it spins the given mesh 
+// it spins the given mesh
 // and plots it to the SDL renderer
 //
 // Draw wireframe rendering of mesh_data to current rendering surface,
 // scaled by width, height, (also implicitly transformed to +200,+200)
 int UpdateSurface(SDL_Renderer *Rndr,Mesh *mesh_data,int Width,int Height,int color,float scale)
 {
-	SDL_Point points[MAX_DRAW_LINES];
-	int point_count = 0;
+    SDL_Point points[MAX_DRAW_LINES];
+    int point_count = 0;
 
     SDL_SetRenderDrawColor(Rndr,0,0,0,amsk);
     SDL_RenderClear(Rndr);
 
-    Scale scll(scale,scale,scale);  
+    Scale scll(scale,scale,scale);
 
     RotateXRad rot(float(color)/10.0);
 //  RotateYRad rot2(float(color)/10.0);
@@ -337,46 +337,46 @@ int UpdateSurface(SDL_Renderer *Rndr,Mesh *mesh_data,int Width,int Height,int co
     for (int x=0;x<mesh_data->NUMPOLYS;x++)
     {
 
-		int poly_points;
+        int poly_points;
         // for each point in the polygon
         for (poly_points=0;poly_points<mesh_data->Polys[x].num_points;poly_points++)
         {
             // ok pick out the point for this polygon and transform it
             Vec4 new_point=trans*mesh_data->Points[mesh_data->Polys[x].points[poly_points]];
 
-			// should we append to the prev mesh?
-			if ((poly_points==0) && (point_count>2) )
-			{
-				//how we detect adjacent polys makes a huge diff, scanning the prev 3 points might find a line which allows us to append this polygon
-				if ((points[point_count-1].x!=int(new_point[0]+200)) || (points[point_count-1].y!=int(new_point[1]+200)))
-				{
-					//printf("prev point %d,%d\n",points[point_count-1].x,points[point_count-1].y );
-					//printf("Big point flush %d\n", point_count);
-					SDL_RenderDrawLines(Rndr,points,point_count);
-					point_count=0;
-				}
-			}
+            // should we append to the prev mesh?
+            if ((poly_points==0) && (point_count>2) )
+            {
+                //how we detect adjacent polys makes a huge diff, scanning the prev 3 points might find a line which allows us to append this polygon
+                if ((points[point_count-1].x!=int(new_point[0]+200)) || (points[point_count-1].y!=int(new_point[1]+200)))
+                {
+                    //printf("prev point %d,%d\n",points[point_count-1].x,points[point_count-1].y );
+                    //printf("Big point flush %d\n", point_count);
+                    SDL_RenderDrawLines(Rndr,points,point_count);
+                    point_count=0;
+                }
+            }
 
-			points[point_count].x=new_point[0]+200;
-			points[point_count].y=new_point[1]+200;
+            points[point_count].x=new_point[0]+200;
+            points[point_count].y=new_point[1]+200;
 
-			//printf("point %d,%d\n",points[point_count].x,points[point_count].y );
-			point_count++;
+            //printf("point %d,%d\n",points[point_count].x,points[point_count].y );
+            point_count++;
 
         }
-		// close polygon
-		points[point_count].x=points[point_count-poly_points].x;
-		points[point_count].y=points[point_count-poly_points].y;
-		point_count++;
+        // close polygon
+        points[point_count].x=points[point_count-poly_points].x;
+        points[point_count].y=points[point_count-poly_points].y;
+        point_count++;
 
-		if (point_count>MAX_DRAW_LINES-50)
-		{
-			printf("Big point flush %d\n", point_count);
-			SDL_RenderDrawLines(Rndr,points,point_count);
-			point_count=0;
-		}
+        if (point_count>MAX_DRAW_LINES-50)
+        {
+            printf("Big point flush %d\n", point_count);
+            SDL_RenderDrawLines(Rndr,points,point_count);
+            point_count=0;
+        }
     }
-	SDL_RenderDrawLines(Rndr,points,point_count);
+    SDL_RenderDrawLines(Rndr,points,point_count);
     return 0;
 }
 
@@ -392,9 +392,9 @@ int main(int argc, char **argv)
     }
 
     //read and construct a mesh from the given .dae file
-    Mesh mesh_from_file(argv[1]); 
+    Mesh mesh_from_file(argv[1]);
 
-    float scale=80; //use 80 for monkey.dae and 0.2 for heinkel.dae 
+    float scale=80; //use 80 for monkey.dae and 0.2 for heinkel.dae
     if (argc>2)
     {
         sscanf(argv[2],"%f",&scale);
@@ -413,7 +413,7 @@ int main(int argc, char **argv)
             {
                 SDL_Surface *surf=SDL_CreateRGBSurface(0,640,480,32,rmask,gmask,bmask,amask);
                 if (surf)
-                {   
+                {
                     SDL_Texture *tex = SDL_CreateTextureFromSurface(render, surf);
                     if (tex)
                     {
@@ -434,7 +434,7 @@ int main(int argc, char **argv)
                                     }
                                 }
                                 UpdateSurface(render,&mesh_from_file,640,480,color,scale);
-                                
+
                                 SDL_RenderPresent(render);
                             }
                         }
@@ -442,7 +442,7 @@ int main(int argc, char **argv)
                         // Done spinning the mesh, lets cleanup
                         //
                         SDL_DestroyTexture(tex);
-                    }                   
+                    }
                     SDL_FreeSurface(surf);
                 }
                 SDL_DestroyRenderer(render);
@@ -451,5 +451,5 @@ int main(int argc, char **argv)
         }
         SDL_Quit();
     }
-	return 0;
+    return 0;
 }
