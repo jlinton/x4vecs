@@ -88,7 +88,7 @@ class SSEx8
 	float operator[](int index_prm);
 	SSEx8 Get(int index_prm);
 	void save(float *dst_prm) { _mm256_store_ps(dst_prm,octo_floats);};
-	std::string as_str(char *format_prm="%1.2f %1.2f %1.2f %1.2f %1.2f %1.2f %1.2f %1.2f");
+	std::string as_str(const char *format_prm="%1.2f %1.2f %1.2f %1.2f %1.2f %1.2f %1.2f %1.2f");
 
 	// adds urinary
 	SSEx8 & operator+=(const SSEx8 &src2) { octo_floats=_mm256_add_ps(octo_floats,src2.octo_floats); return *this;}
@@ -212,7 +212,7 @@ void SSEx8::Set(int index,float value)
 
 }
 
-std::string SSEx8::as_str(char *format_prm)
+std::string SSEx8::as_str(const char *format_prm)
 {
 	char outstring[255];
 	float x[8];
@@ -281,7 +281,7 @@ class SSEx4
 	float operator[](int index_prm);
 	SSEx4 Get(int index_prm);
 	void save(float *dst_prm) { _mm_store_ps(dst_prm,quad_floats);};
-	std::string as_str(char *format_prm="%1.2f %1.2f %1.2f %1.2f");
+	std::string as_str(const char *format_prm="%1.2f %1.2f %1.2f %1.2f");
 
 	// adds urinary
 	SSEx4 & operator+=(const SSEx4 &src2) { quad_floats=_mm_add_ps(quad_floats,src2.quad_floats); return *this;}
@@ -407,7 +407,7 @@ void SSEx4::Set(int index,float value)
 	}
 }
 
-std::string SSEx4::as_str(char *format_prm)
+std::string SSEx4::as_str(const char *format_prm)
 {
 	char outstring[255];
 	float x[4];

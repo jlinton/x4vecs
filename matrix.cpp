@@ -41,7 +41,7 @@ class SSEx4Matrix
     SSEx4Matrix operator*(const SSEx4Matrix &Mult);
 
     void Transpose();
-    std::string as_str(char *format_prm="%6.2f %6.2f %6.2f %6.2f");
+    std::string as_str(const char *format_prm="%6.2f %6.2f %6.2f %6.2f");
   private:
     Vec4 Vecs[4];
 
@@ -174,20 +174,11 @@ void SSEx4Matrix::Transpose(void)
     }
 #endif
 }
-
-#ifdef __ARM_NEON__
-// some versions of GCC/etc have issues because they are trying to atomic load+add from std::string()
-// and the __sync* functions are missing, this is an evil hack, mostly because we don't care about thread sync in this case
-extern "C" unsigned int __sync_fetch_and_add_4(volatile void *value,unsigned int add)
-{
-      return (*(unsigned int*)value)+add;
-}
-
-#endif
+ 
 
 // BTW: This little routine is nearly 4x as large as anything else in this module..
 // So, don't use it for anything other than debug..
-std::string SSEx4Matrix::as_str(char *format_prm)
+std::string SSEx4Matrix::as_str(const char *format_prm)
 {
     std::string ret=Vecs[0].as_str(format_prm)+std::string("\n")+Vecs[1].as_str(format_prm)+std::string("\n")+Vecs[2].as_str(format_prm)+std::string("\n")+Vecs[3].as_str(format_prm)+std::string("\n");
     return ret;

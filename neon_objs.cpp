@@ -118,7 +118,7 @@ class NEONx4
 	}
 
 	void save(float *dst_prm) {  vst1q_f32 (dst_prm, quad_floats); }
-	std::string as_str(char *format_prm="%1.2f %1.2f %1.2f %1.2f");
+	std::string as_str(const char *format_prm="%1.2f %1.2f %1.2f %1.2f");
 
 	// adds urinary
 	NEONx4 & operator+=(const NEONx4 &src2) { quad_floats=vaddq_f32 (quad_floats, src2.quad_floats); return *this;} 
@@ -152,7 +152,7 @@ class NEONx4
 };
 
 
-std::string NEONx4::as_str(char *format_prm)
+std::string NEONx4::as_str(const char *format_prm)
 {
 	char outstring[255];
 	float x[4];

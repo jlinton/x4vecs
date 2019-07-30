@@ -61,7 +61,7 @@ template<class ELEM_T> class PORTx4
 	ELEM_T operator[](int index_prm) { return elements[index_prm]; }
 	PORTx4<ELEM_T> Get(int index_prm) { PORTx4<ELEM_T> tmp; tmp.elements[0]=elements[index_prm]; tmp.elements[1]=0;  tmp.elements[2]=0;  tmp.elements[3]=0;  tmp.elements[4]=0; return tmp; }
 	void save(ELEM_T *dst_prm) { dst_prm[0]=elements[0];dst_prm[1]=elements[1]; dst_prm[2]=elements[2]; dst_prm[3]=elements[3]; };
-	std::string as_str(char *format_prm="%1.2f %1.2f %1.2f %1.2f")
+	std::string as_str(const char *format_prm="%1.2f %1.2f %1.2f %1.2f")
 	{
 		char outstring[255];
 		snprintf(outstring,254,format_prm,elements[0],elements[1],elements[2],elements[3]);
@@ -133,13 +133,13 @@ template<class ELEM_T> PORTx4<ELEM_T> operator/(const float &a,const PORTx4<ELEM
 }
 
 typedef PORTx4<float> Vec4;
+#include "matrix.cpp"
 
 // Unit test here...
 #ifndef NO_MAIN
 
 #include <sys/time.h>
 #include <stdlib.h>
-#include "matrix.cpp"
 int main(int argc,char *argv[])
 {
 	int xc,xd;

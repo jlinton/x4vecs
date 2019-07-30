@@ -45,12 +45,11 @@
 
 #ifdef __ARM_NEON__
 #include "neon_objs.cpp"
-#endif
-
-#ifdef __SSE4_1__
+#elif defined(__SSE3__)
 #include "sse_objs2.cpp"
+#else
+#include "portable_objs.cpp"
 #endif
-
 
 #include "pugixml.hpp"
 
@@ -83,8 +82,8 @@ struct polylist_t
 };
 
 
-// this class reads a .DAE file, and encpuslates the 
-// the points/normals and polygon list from the .dae file
+// this class reads a .DAE file, and encapsulates the
+// points/normals and polygon list from the .dae file
 // it can then be used by UpdateSurface() to draw a wireframe
 // representation of the mesh.
 //
