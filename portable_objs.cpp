@@ -41,6 +41,8 @@
 
 #define PORTABLE_VEC
 
+template<int Size> class vMatrix;
+
 template<class ELEM_T> class PORTx4
 {
   public:
@@ -58,7 +60,7 @@ template<class ELEM_T> class PORTx4
     void Set(int index,ELEM_T value) { elements[index]=value; }
 
     // reads
-    ELEM_T operator[](int index_prm) { return elements[index_prm]; }
+    ELEM_T operator[](int index_prm) const { return elements[index_prm]; }
     PORTx4<ELEM_T> Get(int index_prm) { PORTx4<ELEM_T> tmp; tmp.elements[0]=elements[index_prm]; tmp.elements[1]=0;  tmp.elements[2]=0;  tmp.elements[3]=0;  tmp.elements[4]=0; return tmp; }
     void save(ELEM_T *dst_prm) { dst_prm[0]=elements[0];dst_prm[1]=elements[1]; dst_prm[2]=elements[2]; dst_prm[3]=elements[3]; };
     std::string as_str(const char *format_prm="%1.2f %1.2f %1.2f %1.2f")
@@ -99,7 +101,8 @@ template<class ELEM_T> class PORTx4
 
   private:
      ELEM_T elements[4];
-     friend class SSEx4Matrix;
+     friend class vMatrix<4>;
+     //friend class SSEx4Matrix;
 };
 
 

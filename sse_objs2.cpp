@@ -85,7 +85,7 @@ class SSEx8
     void Set(int index,float value);
 
     // reads
-    float operator[](int index_prm);
+    float operator[](int index_prm) const;
     SSEx8 Get(int index_prm);
     void save(float *dst_prm) { _mm256_store_ps(dst_prm,octo_floats);};
     std::string as_str(const char *format_prm="%1.2f %1.2f %1.2f %1.2f %1.2f %1.2f %1.2f %1.2f");
@@ -115,6 +115,7 @@ class SSEx8
 
 
     // other manipulations
+	// floatFMAC(const SSEx8 &src2) {}
     float ElementSum(void) const { __m256 tmp = _mm256_permute2f128_ps(octo_floats , octo_floats , 1); tmp = _mm256_add_ps(tmp, octo_floats); tmp = _mm256_hadd_ps(tmp, tmp); tmp = _mm256_hadd_ps(tmp, tmp); __m128 tmp2 = _mm256_extractf128_ps (tmp,0);return _mm_cvtss_f32(tmp2); }
 //  float Dot(const SSEx8 &src2) { __m256 tmp=_mm256_mul_ps(octo_floats,src2.octo_floats); tmp=_mm256_hadd_ps(tmp,tmp); tmp=_mm256_hadd_ps(tmp,tmp);float ret; _mm256_store_ss(&ret,tmp); return ret;}
 
@@ -176,7 +177,7 @@ _mm256_extract_ps (__m256 __X, const int __N)
 //  return (float)_mm_extract_ps (__Y, __N % 4); //doesn't do what we want...
 }
 
-float SSEx8::operator[](int index_prm)
+float SSEx8::operator[](int index_prm) const
 {
     // _ISN'T_ this what compilers are for????????
     switch (index_prm)
@@ -278,7 +279,7 @@ class SSEx4
     void Set(int index,float value);
 
     // reads
-    float operator[](int index_prm);
+    float operator[](int index_prm) const;
     SSEx4 Get(int index_prm);
     void save(float *dst_prm) { _mm_store_ps(dst_prm,quad_floats);};
     std::string as_str(const char *format_prm="%1.2f %1.2f %1.2f %1.2f");
@@ -343,7 +344,7 @@ SSEx4 SSEx4::Get(int index_prm)
     return tmp;
 }
 
-float SSEx4::operator[](int index_prm)
+float SSEx4::operator[](int index_prm) const
 {
     register float ret;
     //(could be _mm_extract_ps(quad_floats,index_prm) for sse4) (but that rounds to int!)
