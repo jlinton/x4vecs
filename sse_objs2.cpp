@@ -41,7 +41,7 @@
 #include <string>
 #include <stdio.h>
 
-
+template<int Size> class vMatrix;
 
 #include <pmmintrin.h>
 //#include <mmintrin.h>
@@ -314,7 +314,7 @@ class SSEx4
 
   private:
     __m128 quad_floats;
-    friend class SSEx4Matrix;
+    friend class vMatrix<4>;
 };
 
 SSEx4 SSEx4::Get(int index_prm)
@@ -701,4 +701,3 @@ Matrix
 #endif
 
 #endif //NO_MAIN
-x
