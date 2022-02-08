@@ -55,8 +55,8 @@ template<class ELEM_T> class PORTx4
     //PORTx4<ELEM_T>(const PORTx4<ELEM_T> &src_prm) { quad_ELEM_Ts=_mm_shuffle_ps(src_prm.quad_ELEM_Ts,src_prm.quad_ELEM_Ts,_MM_SHUFFLE(3,2,1,0)); };
 
     // assignment
-    PORTx4<ELEM_T> & operator=(const PORTx4<ELEM_T> &src_prm) { elements[0]=src_prm.elements[0];elements[1]=src_prm.elements[1]; elements[2]=src_prm.elements[2]; elements[3]=src_prm.elements[3]; }
-    PORTx4<ELEM_T> & operator=(const ELEM_T x[4]) { elements[0]=x[0];elements[1]=x[1]; elements[2]=x[2]; elements[3]=x[3]; };
+    PORTx4<ELEM_T> & operator=(const PORTx4<ELEM_T> &src_prm) { elements[0]=src_prm.elements[0];elements[1]=src_prm.elements[1]; elements[2]=src_prm.elements[2]; elements[3]=src_prm.elements[3]; return *this;}
+    PORTx4<ELEM_T> & operator=(const ELEM_T x[4]) { elements[0]=x[0];elements[1]=x[1]; elements[2]=x[2]; elements[3]=x[3]; return *this;};
     void Set(int index,ELEM_T value) { elements[index]=value; }
 
     // reads
