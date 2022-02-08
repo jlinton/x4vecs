@@ -54,13 +54,13 @@ template<int VEC_CNT, int ELEM_CNT, class VEC_T> class BigVector
 	BigVector(BigVector &src) { for (int x=0;x<VECS;x++) vec[x]=src.vec[x]; };
 	BigVector(VEC_T *src,int src_cnt) { VEC_T tmp(0.0); for (int x=0;x<VECS;x++) vec[x]=tmp; for (int x=0;x<src_cnt;x++) vec[x]=src[x]; }; //allows a resize op
 	//BigVector(double *fill) {VEC_T tmp(fill); for (int x=0;x<VECS;x++) vec[x]=tmp;}
-	template <typename... Args> BigVector(Args... args) {VEC_T tmp(0.0); for (int x=0;x<VECS;x++) vec[x]=tmp; Set(0, args...); };
+	template <typename... Args> BigVector(Args... args) {VEC_T tmp(0.0); for (int x=0;x<VECS;x++) vec[x]=tmp; Set(0, args...); }; // if this aborts, verify vec is properly aligned (32 bytes for x8)
 
 	// POD copy construct
 
 	// assign
-	BigVector & operator=(const BigVector &src_prm) { for (int x=0;x<VECS;x++) vec[x]=src_prm.vec[x]; }
-	BigVector & operator=(const float src[ELEM_CNT]) { for (int x=0;x<ELEM_CNT;x++) vec[x/VEC_CNT].Set(x-(x/VEC_CNT)*VEC_CNT,src[x]);};
+	BigVector & operator=(const BigVector &src_prm) { for (int x=0;x<VECS;x++) vec[x]=src_prm.vec[x]; return *this;}
+	BigVector & operator=(const float src[ELEM_CNT]) { for (int x=0;x<ELEM_CNT;x++) vec[x/VEC_CNT].Set(x-(x/VEC_CNT)*VEC_CNT,src[x]); return *this;};
 	void Set(int off, float Val) {const int n=off/VEC_CNT; vec[n].Set(off-n*VEC_CNT, Val); }
 	void Fill(float Val) {VEC_T tmp(Val); for (int x=1;x<VEC_CNT;x++) tmp.Set(x,Val); for (int x=0;x<VECS;x++) vec[x]=tmp;}
 	template <typename... Args> void Set(int off, float Val, Args... args) { int n=off/VEC_CNT; vec[n].Set(off-n*VEC_CNT, Val); Set(++off,args...); };
