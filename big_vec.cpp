@@ -30,6 +30,7 @@
 //	  g++ -msse3 -g -O3 -std=c++11 big_vec.cpp
 // AVXx8 version
 //	  g++ -mavx -g -O3 -std=c++11 big_vec.cpp
+
 #define NO_MAIN
 #ifdef __ARM_NEON__
 #include "neon_objs.cpp"
@@ -39,11 +40,12 @@
 #include "portable_objs.cpp"
 #endif
 
-// big allocs might need something like  -Wl,-z,stack-size=XXXX; ulimit -s XXXXX
+// big allocs might need something like	 -Wl,-z,stack-size=XXXX; ulimit -s XXXXX
 
 // define arbitrary len vector in relation to HW vector class
 //
 #define VECS ((ELEM_CNT/VEC_CNT)?(ELEM_CNT/VEC_CNT):1)
+
 template<int VEC_CNT, int ELEM_CNT, class VEC_T> class BigVector
 {
   public:
@@ -131,7 +133,8 @@ template<int SIZE, class VEC_T> class MatrixS
 	MatrixS & operator-=(const float src2) { for (int x=0;x<SIZE;x++) vecs[x]-=src2;; return *this;}
 
 	// muls urinary
-	MatrixS & operator*=(const MatrixS &src2) {
+	MatrixS & operator*=(const MatrixS &src2)
+	{
 		MatrixS Trans(src2); //todo heap allocate if matrix is really large (or maybe do something requiring the caller to pre transpose it?, or just use the gather loads..
 		Trans.Transpose();
 
@@ -147,7 +150,8 @@ template<int SIZE, class VEC_T> class MatrixS
 		}
 		return *this;
 	}
-	MatrixS & operator/=(const MatrixS &src2) {
+	MatrixS & operator/=(const MatrixS &src2)
+	{
 		MatrixS Trans(src2);
 		Trans.Transpose();
 
@@ -165,6 +169,7 @@ template<int SIZE, class VEC_T> class MatrixS
 	}
 	VEC_T & operator*=(const VEC_T &src2) { VEC_T ret; for (int x=0;x<SIZE;x++) ret.Set(x,(vecs[x]*src2).ElementSum()); return *this;}
 	VEC_T & operator/=(const VEC_T &src2) { VEC_T ret; for (int x=0;x<SIZE;x++) ret.Set(x,(vecs[x]/src2).ElementSum()); return *this;} //probably should build inverse vec?
+
 	MatrixS & operator*=(const float src2) { for (int x=0;x<SIZE;x++) vecs[x]*=src2; return *this;}
 	MatrixS & operator/=(const float src2) { for (int x=0;x<SIZE;x++) vecs[x]/=src2;; return *this;}
 
@@ -258,7 +263,7 @@ template<int SIZE_ROW,int SIZE_COL, class VEC_TR = BigVector<4,SIZE_ROW,Vec4>, c
 	}
 
 	// version of above with the src pre-transposed
-	// 	template<int S2_ROW,int S2_COL, class S2_VR,class S2_VC>
+	//	template<int S2_ROW,int S2_COL, class S2_VR,class S2_VC>
 	// MatrixST<SIZE_COL, S2_ROW, VEC_TC, S2_VR> MultNoTrans(const MatrixST<S2_ROW, S2_COL, S2_VR, S2_VC> &src2)
 
 
@@ -342,7 +347,6 @@ template<int SIZE_ROW,int SIZE_COL, class VEC_TR = BigVector<4,SIZE_ROW,Vec4>, c
 	VEC_TR vecs[SIZE_COL]; //number of rows
 };
 
-// holy fuck
 template<int A,int B,class C,class D,int SA,int SB,class SC,class SD,template<int ,int ,class ,class > class T1, template<int ,int ,class ,class > class T2>void muls(T1<A,B,C,D> &s1, T2<SA,SB,SC,SD> &s)
 {
 	MatrixST<A,SB,C,SD> tmp(0);
@@ -410,7 +414,6 @@ int main(int argv,char *argc[])
 	/* not computed correctly yet because we want to calc inverse (and det()) first
 	x8Mat2/=x8Mat;
 	printf("big mat:\n%s\n", x8Mat2.as_str().c_str());*/
-
 
 	// square version, validate against above.
 	MatrixST<8,8,Vec8,Vec8> x8nsMat(1);
